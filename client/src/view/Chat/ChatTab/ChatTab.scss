@@ -1,0 +1,16 @@
+.chat-tab {
+  display: flex;
+  padding: 0.25rem 1.1rem;
+  border: 1px solid gray;
+  border-radius: 0.4rem;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    background-color: white;
+  }
+
+  &__avatar {
+    margin-right: 1rem;
+  }
+}

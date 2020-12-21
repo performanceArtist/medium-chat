@@ -1,0 +1,32 @@
+.chat-message {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+
+  &_yours {
+    align-self: flex-end;
+  }
+
+  &_yours & {
+    &__content {
+      background-color: rgb(232, 255, 232);
+    }
+
+    &__avatar {
+      margin-right: 0;
+      margin-left: 1rem;
+    }
+  }
+
+  &__avatar {
+    margin-right: 1rem;
+  }
+
+  &__content {
+    padding: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid grey;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,29 @@
+.preloader {
+  width: 1rem;
+  height: 1rem;
+  clear: both;
+}
+
+.preloader_circle {
+  border: 4px rgba(black, 0.25) solid;
+  border-top: 4px rgba(black, 1) solid;
+  border-radius: 50%;
+  -webkit-animation: spCircRot 0.6s infinite linear;
+  animation: spCircRot 0.6s infinite linear;
+}
+@-webkit-keyframes spCircRot {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(359deg);
+  }
+}
+@keyframes spCircRot {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}

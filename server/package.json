@@ -1,0 +1,46 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettify": "prettier --write src/**/*.{ts,tsx,js,jsx,css,scss,json}",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx ./src",
+    "dev": "ts-node-dev -r tsconfig-paths/register src/server.ts",
+    "check-types": "tsc -p . --noEmit",
+    "check-types:watch": "tsc -p . --noEmit -w"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "fp-ts": "^2.8.1",
+    "io-ts": "^2.2.9",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "session-file-store": "^1.4.0",
+    "socket.io": "^2.3.0",
+    "sqlite3": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/cors": "^2.8.7",
+    "@types/express": "^4.17.7",
+    "@types/express-session": "^1.17.0",
+    "@types/node": "^13.13.15",
+    "@types/passport": "^1.0.4",
+    "@types/passport-local": "^1.0.33",
+    "@types/session-file-store": "^1.2.1",
+    "@types/socket.io": "^2.1.11",
+    "@types/sqlite3": "^3.1.6",
+    "prettier": "^2.0.5",
+    "ts-node-dev": "^1.0.0-pre.57",
+    "tsconfig-paths": "^3.9.0",
+    "tslib": "^1.13.0",
+    "typescript": "^3.9.7"
+  }
+}

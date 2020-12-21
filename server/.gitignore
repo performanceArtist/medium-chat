@@ -1,0 +1,5 @@
+node_modules/
+dist
+.vscode
+src/model/sessions/*
+src/model/db/db.sqlite3

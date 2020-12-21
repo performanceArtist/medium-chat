@@ -1,0 +1,17 @@
+.chat-layout {
+  width: 43rem;
+
+  &__messages {
+    display: flex;
+    flex-direction: column;
+    max-height: 500px;
+    overflow-y: scroll;
+  }
+
+  &__input-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid gray;
+    border-radius: 0.2rem;
+  }
+}
