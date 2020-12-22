@@ -36,7 +36,7 @@ type Deps = {
   };
 };
 
-export const createApiClient = pipe(
+export const makeApiClient = pipe(
   selector.keys<Deps>()('api'),
   selector.map(deps => (): ApiClient => {
     const {

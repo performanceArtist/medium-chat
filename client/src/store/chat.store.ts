@@ -41,12 +41,12 @@ export type ChatStore = {
   joinChat: (room: string) => void;
 };
 
-type CreateChatStore = () => ChatStore;
+type MakeChatStore = () => ChatStore;
 
-export const createChatStore = pipe(
+export const makeChatStore = pipe(
   selector.keys<ChatStoreDeps>()('apiClient', 'socketClient'),
   selector.map(
-    (deps): CreateChatStore => () => {
+    (deps): MakeChatStore => () => {
       const { apiClient, socketClient } = deps;
 
       const chats$ = pipe(

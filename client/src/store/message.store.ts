@@ -26,12 +26,12 @@ export type MessageStore = {
   sendMessage: (query: SendQuery) => void;
 };
 
-type CreateMessageStore = () => MessageStore;
+type MakeMessageStore = () => MessageStore;
 
-export const createMessageStore = pipe(
+export const makeMessageStore = pipe(
   selector.keys<MessageStoreDeps>()('apiClient', 'socketClient'),
   selector.map(
-    (deps): CreateMessageStore => () => {
+    (deps): MakeMessageStore => () => {
       const { apiClient, socketClient } = deps;
 
       const messages$ = pipe(

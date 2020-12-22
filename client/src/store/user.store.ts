@@ -28,12 +28,12 @@ export type UserStore = {
   logout: () => Request<unknown>;
 };
 
-type CreateUserStore = () => UserStore;
+type MakeUserStore = () => UserStore;
 
-export const createUserStore = pipe(
+export const makeUserStore = pipe(
   selector.keys<UserStoreDeps>()('apiClient'),
   selector.map(
-    (deps): CreateUserStore => () => {
+    (deps): MakeUserStore => () => {
       const { apiClient } = deps;
 
       const getUser = () => apiClient.get('user/me', { scheme: UserScheme });

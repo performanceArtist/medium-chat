@@ -28,7 +28,7 @@ type Deps = {
   socket: AbstractSocket;
 };
 
-export const createSocketClient = pipe(
+export const makeSocketClient = pipe(
   selector.keys<Deps>()('socket'),
   selector.map(deps => (): SocketClient => {
     const { socket } = deps;

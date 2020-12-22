@@ -4,11 +4,11 @@ import { selector } from '@performance-artist/fp-ts-adt';
 import { medium } from '@performance-artist/medium';
 
 import { AppContainer } from 'view/App/AppContainer';
-import { createApiClient } from './api/api-client';
-import { createSocketClient } from 'api/socket-client';
-import { createUserStore } from 'store/user.store';
-import { createMessageStore } from 'store/message.store';
-import { createChatStore } from 'store/chat.store';
+import { makeApiClient } from './api/api-client';
+import { makeSocketClient } from 'api/socket-client';
+import { makeUserStore } from 'store/user.store';
+import { makeMessageStore } from 'store/message.store';
+import { makeChatStore } from 'store/chat.store';
 import { makeAppSource } from 'view/App/app.source';
 import { appMedium } from 'mediums/app.medium';
 
@@ -32,16 +32,16 @@ export const Root = pipe(
       'messageStore',
       'userStore',
     ),
-    createApiClient,
-    createSocketClient,
+    makeApiClient,
+    makeSocketClient,
   ),
-  selector.map(([WithEpic, createApiClient, createSocketClient]) => {
-    const apiClient = createApiClient();
-    const socketClient = createSocketClient();
+  selector.map(([WithEpic, makeApiClient, makeSocketClient]) => {
+    const apiClient = makeApiClient();
+    const socketClient = makeSocketClient();
 
-    const userStore = createUserStore.run({ apiClient })();
-    const messageStore = createMessageStore.run({ apiClient, socketClient })();
-    const chatStore = createChatStore.run({ apiClient, socketClient })();
+    const userStore = makeUserStore.run({ apiClient })();
+    const messageStore = makeMessageStore.run({ apiClient, socketClient })();
+    const chatStore = makeChatStore.run({ apiClient, socketClient })();
 
     return WithEpic.run({
       appSource: makeAppSource(),
