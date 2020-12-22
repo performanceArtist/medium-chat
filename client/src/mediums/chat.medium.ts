@@ -1,4 +1,4 @@
-import { medium, ray } from '@performance-artist/medium';
+import { medium, ray, withLogger } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import {
   filter,
@@ -11,7 +11,6 @@ import { array, either, option } from 'fp-ts';
 import { observableEither } from 'fp-ts-rxjs';
 import { sequenceT } from 'fp-ts/lib/Apply';
 import { flow } from 'fp-ts/lib/function';
-import { withLogger } from '@performance-artist/medium/dist/homs';
 
 import { ChatStore } from 'store/chat.store';
 import { ChatSource } from 'view/Chat/chat.source';

@@ -16,7 +16,7 @@ export const Layout = pipe(
           <header>
             <LogoutContainer />
           </header>
-          <h1>KEK POK</h1>
+          <h1>WELCOME</h1>
           {children}
         </div>
       );

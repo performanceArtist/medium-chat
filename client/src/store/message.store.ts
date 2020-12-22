@@ -3,7 +3,7 @@ import * as t from 'io-ts';
 import { Observable } from 'rxjs';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
-import { makeMapStore } from '@performance-artist/store';
+import { makeMapStore } from '@performance-artist/rx-utils';
 
 import { apiClientKey, Request } from 'api/api-client';
 import { socketClientKey, MessageScheme, MessageType } from 'api/socket-client';

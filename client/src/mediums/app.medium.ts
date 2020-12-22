@@ -1,10 +1,9 @@
 import { AppSource } from 'view/App/app.source';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { medium, ray } from '@performance-artist/medium';
+import { medium, ray, withLogger } from '@performance-artist/medium';
 import { switchMap } from 'rxjs/operators';
 import * as rxo from 'rxjs/operators';
 import { either } from 'fp-ts';
-import { withLogger } from '@performance-artist/medium/dist/homs';
 
 import { UserStore } from 'store/user.store';
 

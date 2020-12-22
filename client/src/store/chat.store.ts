@@ -4,7 +4,7 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import { observableEither } from 'fp-ts-rxjs';
 import { selector } from '@performance-artist/fp-ts-adt';
 import { pick } from '@performance-artist/fp-ts-adt/dist/utils';
-import { makeMapStore } from '@performance-artist/store';
+import { makeMapStore } from '@performance-artist/rx-utils';
 
 import { socketClientKey } from 'api/socket-client';
 import { apiClientKey, Request } from 'api/api-client';
