@@ -18,7 +18,7 @@ type RequestOptions<S extends Type<any> = never> = {
 
 export type Request<T> = Observable<RequestResult<T>>;
 
-export type Api = {
+export type ApiClient = {
   get: <S extends Type<any>, R extends TypeOf<S> = unknown>(
     url: string,
     options?: RequestOptions<S>,
@@ -28,7 +28,6 @@ export type Api = {
     options?: RequestOptions<S>,
   ) => Request<R>;
 };
-export const apiClientKey = selector.key<Api>()('apiClient');
 
 type Deps = {
   api: {
@@ -39,7 +38,7 @@ type Deps = {
 
 export const createApiClient = pipe(
   selector.keys<Deps>()('api'),
-  selector.map(deps => (): Api => {
+  selector.map(deps => (): ApiClient => {
     const {
       api: { baseURL, defaults },
     } = deps;

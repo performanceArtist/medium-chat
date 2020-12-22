@@ -18,7 +18,6 @@ export type SocketClient = {
   ) => Observable<TypeOf<ChannelToScheme[T]>>;
   emit: (event: string, ...args: any[]) => void;
 };
-export const socketClientKey = selector.key<SocketClient>()('socketClient');
 
 type AbstractSocket = {
   on: (event: string, f: (data: unknown) => void) => void;

@@ -5,8 +5,8 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
 import { makeMapStore } from '@performance-artist/rx-utils';
 
-import { apiClientKey, Request } from 'api/api-client';
-import { socketClientKey, MessageScheme, MessageType } from 'api/socket-client';
+import { ApiClient, Request } from 'api/api-client';
+import { MessageScheme, MessageType, SocketClient } from 'api/socket-client';
 
 export type MessageQuery = {
   chatID: number;
@@ -16,6 +16,10 @@ export type MessageQuery = {
 
 export type SendQuery = { message: MessageType; room: string };
 
+type MessageStoreDeps = {
+  apiClient: ApiClient;
+  socketClient: SocketClient;
+};
 export type MessageStore = {
   getMessagesByChat: (chatID: number) => Request<MessageType[]>;
   messages$: Observable<MessageType[]>;
@@ -25,9 +29,11 @@ export type MessageStore = {
 type CreateMessageStore = () => MessageStore;
 
 export const createMessageStore = pipe(
-  selector.combine(apiClientKey, socketClientKey),
+  selector.keys<MessageStoreDeps>()('apiClient', 'socketClient'),
   selector.map(
-    ([apiClient, socketClient]): CreateMessageStore => () => {
+    (deps): CreateMessageStore => () => {
+      const { apiClient, socketClient } = deps;
+
       const messages$ = pipe(
         socketClient.subscribe('message'),
         scan<MessageType, MessageType[]>((acc, cur) => acc.concat(cur), []),

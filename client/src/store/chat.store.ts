@@ -6,8 +6,8 @@ import { selector } from '@performance-artist/fp-ts-adt';
 import { pick } from '@performance-artist/fp-ts-adt/dist/utils';
 import { makeMapStore } from '@performance-artist/rx-utils';
 
-import { socketClientKey } from 'api/socket-client';
-import { apiClientKey, Request } from 'api/api-client';
+import { SocketClient } from 'api/socket-client';
+import { ApiClient, Request } from 'api/api-client';
 import { User } from './user.store';
 
 export const ChatScheme = t.type({
@@ -31,6 +31,10 @@ const ChatUsersScheme = t.type({
 export type Chat = t.TypeOf<typeof ChatScheme>;
 export type UsersByChat = t.TypeOf<typeof ChatUsersScheme>;
 
+type ChatStoreDeps = {
+  apiClient: ApiClient;
+  socketClient: SocketClient;
+};
 export type ChatStore = {
   chats$: Request<Chat[]>;
   getUsersByChat: (chatID: number) => Request<User[]>;
@@ -40,9 +44,11 @@ export type ChatStore = {
 type CreateChatStore = () => ChatStore;
 
 export const createChatStore = pipe(
-  selector.combine(apiClientKey, socketClientKey),
+  selector.keys<ChatStoreDeps>()('apiClient', 'socketClient'),
   selector.map(
-    ([apiClient, socketClient]): CreateChatStore => () => {
+    (deps): CreateChatStore => () => {
+      const { apiClient, socketClient } = deps;
+
       const chats$ = pipe(
         apiClient.get('chat/all', { scheme: t.array(ChatScheme) }),
         shareReplay(1),

@@ -2,7 +2,7 @@ import * as t from 'io-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
 
-import { apiClientKey, Request } from 'api/api-client';
+import { ApiClient, Request } from 'api/api-client';
 
 const UserScheme = t.type({
   id: t.number,
@@ -18,6 +18,10 @@ export type LoginQuery = {
   password: string;
 };
 
+type UserStoreDeps = {
+  apiClient: ApiClient;
+};
+
 export type UserStore = {
   getUser: () => Request<User>;
   login: (query: LoginQuery) => Request<unknown>;
@@ -27,9 +31,11 @@ export type UserStore = {
 type CreateUserStore = () => UserStore;
 
 export const createUserStore = pipe(
-  apiClientKey,
+  selector.keys<UserStoreDeps>()('apiClient'),
   selector.map(
-    (apiClient): CreateUserStore => () => {
+    (deps): CreateUserStore => () => {
+      const { apiClient } = deps;
+
       const getUser = () => apiClient.get('user/me', { scheme: UserScheme });
 
       const login = (query: { username: string; password: string }) =>
