@@ -1,12 +1,12 @@
 import React, { memo, useCallback } from 'react';
 import { Route, Switch, HashRouter, Redirect } from 'react-router-dom';
 import { RequestResult, selector } from '@performance-artist/fp-ts-adt';
+import { RequestStateRenderer } from '@performance-artist/react-utils';
+import { pipe } from 'fp-ts/lib/pipeable';
 
 import { Preloader } from 'shared/ui/Preloader/Preloader';
 import { LoginContainer } from 'view/Login/LoginContainer';
 import { Authorized } from 'view/Authorized/Authorized';
-import { RequestStateRenderer } from 'shared/ui/RequestState/RequestState';
-import { pipe } from 'fp-ts/lib/pipeable';
 
 type AppProps = {
   user: RequestResult<unknown>;
