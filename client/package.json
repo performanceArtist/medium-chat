@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@performance-artist/fp-ts-adt": "^1.0.11",
-    "@performance-artist/medium": "^1.0.3",
-    "@performance-artist/react-utils": "^1.0.6",
+    "@performance-artist/medium": "^1.0.4",
+    "@performance-artist/react-utils": "^1.0.7",
     "@performance-artist/rx-utils": "^1.0.3",
     "@types/node": "^13.7.0",
     "@types/react": "^16.9.46",
@@ -51,7 +51,6 @@
     "prettier": "^1.19.1",
     "sass-loader": "^8.0.2",
     "ts-jest": "^26.4.4",
-    "ts-toolbelt": "^8.0.7",
     "typescript": "^4.1.2"
   }
 }
