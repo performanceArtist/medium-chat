@@ -4,6 +4,7 @@ import { medium, ray, withLogger } from '@performance-artist/medium';
 import { switchMap } from 'rxjs/operators';
 import * as rxo from 'rxjs/operators';
 import { either } from 'fp-ts';
+import * as rx from 'rxjs';
 
 import { UserStore } from 'store/user.store';
 
@@ -17,27 +18,25 @@ const rawAppMedium = medium.map(
   (deps, on) => {
     const { userStore, appSource } = deps;
 
-    const setUser$ = pipe(
-      on(appSource.create('getUser')),
-      switchMap(userStore.getUser),
-      ray.infer(user => appSource.state.modify(state => ({ ...state, user }))),
-    );
-
     const login$ = pipe(
       on(appSource.create('login')),
       switchMap(userStore.login),
       rxo.filter(either.isRight),
-      rxo.mapTo(appSource.create('getUser')()),
     );
 
     const logout$ = pipe(
       on(appSource.create('logout')),
       switchMap(userStore.logout),
       rxo.filter(either.isRight),
-      rxo.mapTo(appSource.create('getUser')()),
     );
 
-    return { setUser$, login$, logout$ };
+    const setUser$ = pipe(
+      rx.merge(on(appSource.create('getUser')), login$, logout$),
+      switchMap(userStore.getUser),
+      ray.infer(user => appSource.state.modify(state => ({ ...state, user }))),
+    );
+
+    return { setUser$ };
   },
 );
 

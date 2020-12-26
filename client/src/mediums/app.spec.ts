@@ -32,13 +32,11 @@ describe('App flow', () => {
 
         appSource.dispatch('login')(loginQueryMock);
         expect(history.take()).toStrictEqual([
-          appSource.create('getUser')(),
           ray.create('setUser$')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
         expect(history.take()).toStrictEqual([
-          appSource.create('getUser')(),
           ray.create('setUser$')(errorMock),
         ]);
       },
@@ -65,7 +63,6 @@ describe('App flow', () => {
 
         appSource.dispatch('logout')();
         expect(history.take()).toStrictEqual([
-          appSource.create('getUser')(),
           ray.create('setUser$')(errorMock),
         ]);
       },

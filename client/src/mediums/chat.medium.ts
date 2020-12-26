@@ -49,12 +49,11 @@ const rawChatMedium = medium.map(
     const joinChats$ = pipe(
       getChats$,
       filter(either.isRight),
-      ray.infer(chats =>
-        chats.right.forEach(chat => chatStore.joinChat(chat.name)),
-      ),
+      map(chats => chats.right),
+      ray.infer(chats => chats.forEach(chat => chatStore.joinChat(chat.name))),
     );
 
-    const getCurrentChat$ = pipe(
+    const setCurrentChat$ = pipe(
       on(chatSource.create('onChatTabClick')),
       switchMap(chatID => {
         const users$ = chatStore.getUsersByChat(chatID);
@@ -126,7 +125,7 @@ const rawChatMedium = medium.map(
     return {
       setChats$,
       joinChats$,
-      getCurrentChat$,
+      setCurrentChat$,
       sendMessage$,
       showChat$,
     };
