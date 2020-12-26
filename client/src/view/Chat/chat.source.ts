@@ -1,12 +1,17 @@
 import { requestResult, RequestResult } from '@performance-artist/fp-ts-adt';
-import { source } from '@performance-artist/medium';
-import { User } from 'shared/types';
+import { source, SourceOf } from '@performance-artist/medium';
 import { Chat } from './Chat';
 import { MessageType } from './ChatLayout/ChatLayout';
 
+export type ChatUser = {
+  id: number;
+  username: string;
+  avatar: string;
+};
+
 export type CurrentChat = {
   id: number;
-  users: User[];
+  users: ChatUser[];
   messages: MessageType[];
 };
 
@@ -24,16 +29,24 @@ export const initialState: ChatState = {
   isChatOpen: false,
 };
 
+export type ChatSource = SourceOf<
+  ChatState,
+  {
+    getChats: void;
+    onChatTabClick: number;
+    setMessage: string;
+    onSubmit: void;
+  }
+>;
+
 const set = source.setFor<ChatState>();
-export const makeChatSource = () =>
+export const makeChatSource = (): ChatSource =>
   source.create(
     'chat',
     initialState,
   )({
-    getChats: source.input<void>(),
-    onChatTabClick: source.input<number>(),
+    getChats: source.input(),
+    onChatTabClick: source.input(),
     setMessage: set('message'),
-    onSubmit: source.input<void>(),
+    onSubmit: source.input(),
   });
-
-export type ChatSource = ReturnType<typeof makeChatSource>;

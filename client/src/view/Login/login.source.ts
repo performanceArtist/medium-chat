@@ -1,4 +1,4 @@
-import { source } from '@performance-artist/medium';
+import { source, SourceOf } from '@performance-artist/medium';
 
 export type LoginState = {
   username: string;
@@ -10,8 +10,16 @@ export const initialState: LoginState = {
   password: '',
 };
 
+export type LoginSource = SourceOf<
+  LoginState,
+  {
+    setUsername: string;
+    setPassword: string;
+  }
+>;
+
 const set = source.setFor<LoginState>();
-export const makeLoginSource = () =>
+export const makeLoginSource = (): LoginSource =>
   source.create(
     'login',
     initialState,
@@ -19,5 +27,3 @@ export const makeLoginSource = () =>
     setUsername: set('username'),
     setPassword: set('password'),
   });
-
-export type LoginSource = ReturnType<typeof makeLoginSource>;
