@@ -17,7 +17,11 @@ const Resolved = Root.run({
     defaults: { withCredentials: true },
   },
   socket,
-  logActive: true,
+  logs: {
+    active: true,
+    logSource: ({ type, payload }) => console.log('[in]', type, payload),
+    logMedium: ({ type, payload }) => console.log('[out]', type, payload),
+  },
 });
 
 ReactDOM.render(<Resolved />, document.querySelector('#root'));

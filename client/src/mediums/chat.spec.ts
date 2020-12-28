@@ -33,7 +33,6 @@ describe('Chat flow', () => {
       () => ({
         appSource: makeAppSource(),
         chatSource: makeChatSource(),
-        logActive: false,
         chatStore: {
           ...chatStoreMock,
           chats$: rx.of(requestResult.success(mockChats)),
@@ -92,7 +91,6 @@ describe('Chat flow', () => {
         return {
           appSource,
           chatSource,
-          logActive: false,
           chatStore: chatStoreMock,
           messageStore: messageStoreMock,
         };

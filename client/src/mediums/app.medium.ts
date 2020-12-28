@@ -1,11 +1,11 @@
-import { AppSource } from 'view/App/app.source';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { medium, ray, withLogger } from '@performance-artist/medium';
+import { medium, ray } from '@performance-artist/medium';
 import { switchMap } from 'rxjs/operators';
 import * as rxo from 'rxjs/operators';
 import { either } from 'fp-ts';
 import * as rx from 'rxjs';
 
+import { AppSource } from 'view/App/app.source';
 import { UserStore } from 'store/user.store';
 
 export type AppMediumDeps = {
@@ -13,7 +13,7 @@ export type AppMediumDeps = {
   appSource: AppSource;
 };
 
-const rawAppMedium = medium.map(
+export const appMedium = medium.map(
   medium.id<AppMediumDeps>()('appSource', 'userStore'),
   (deps, on) => {
     const { userStore, appSource } = deps;
@@ -38,9 +38,4 @@ const rawAppMedium = medium.map(
 
     return { setUser$ };
   },
-);
-
-export const appMedium = pipe(
-  rawAppMedium,
-  withLogger(({ type, payload }) => console.log('app', type, payload)),
 );

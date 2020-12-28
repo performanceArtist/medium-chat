@@ -11,12 +11,13 @@ import { makeMessageStore } from 'store/message.store';
 import { makeChatStore } from 'store/chat.store';
 import { makeAppSource } from 'view/App/app.source';
 import { appMedium } from 'mediums/app.medium';
+import { withSourceLog, withMediumLog } from 'shared/utils/log';
 
 const WithEpic = pipe(
-  selector.combine(AppContainer, appMedium),
-  selector.map(([AppContainer, appMedium]) =>
+  selector.combine(AppContainer, appMedium, withMediumLog),
+  selector.map(([AppContainer, appMedium, withMediumLog]) =>
     withHook(AppContainer)(() => {
-      useSubscription(() => medium.subscribe(appMedium), []);
+      useSubscription(() => medium.subscribe(withMediumLog(appMedium)), []);
 
       return {};
     }),
@@ -34,8 +35,9 @@ export const Root = pipe(
     ),
     makeApiClient,
     makeSocketClient,
+    withSourceLog,
   ),
-  selector.map(([WithEpic, makeApiClient, makeSocketClient]) => {
+  selector.map(([WithEpic, makeApiClient, makeSocketClient, withSourceLog]) => {
     const apiClient = makeApiClient();
     const socketClient = makeSocketClient();
 
@@ -44,7 +46,7 @@ export const Root = pipe(
     const chatStore = makeChatStore.run({ apiClient, socketClient })();
 
     return WithEpic.run({
-      appSource: makeAppSource(),
+      appSource: withSourceLog(makeAppSource()),
       userStore,
       chatStore,
       messageStore,

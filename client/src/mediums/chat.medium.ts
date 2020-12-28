@@ -1,4 +1,4 @@
-import { medium, ray, withLogger } from '@performance-artist/medium';
+import { medium, ray } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import {
   filter,
@@ -24,7 +24,7 @@ export type ChatMediumDeps = {
   messageStore: MessageStore;
 };
 
-const rawChatMedium = medium.map(
+export const chatMedium = medium.map(
   medium.id<ChatMediumDeps>()(
     'appSource',
     'chatSource',
@@ -130,9 +130,4 @@ const rawChatMedium = medium.map(
       showChat$,
     };
   },
-);
-
-export const chatMedium = pipe(
-  rawChatMedium,
-  withLogger(({ type, payload }) => console.log('chat', type, payload)),
 );

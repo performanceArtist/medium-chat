@@ -1,5 +1,5 @@
 import { appMedium } from 'mediums/app.medium';
-import { ray, test } from '@performance-artist/medium';
+import { test } from '@performance-artist/medium';
 import { makeAppSource } from 'view/App/app.source';
 import { either } from 'fp-ts';
 import {
@@ -22,23 +22,18 @@ describe('App flow', () => {
           isRightLogin: () => true,
           isRightLogout: () => true,
         }),
-        logActive: false,
       }),
-      ({ appSource }, history) => {
+      ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
-        expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(errorMock),
-        ]);
+        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
 
         appSource.dispatch('login')(loginQueryMock);
         expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(either.right(userMock)),
+          output('setUser$')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
-        expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(errorMock),
-        ]);
+        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
       },
     ),
   );
@@ -53,18 +48,15 @@ describe('App flow', () => {
           isRightLogin: () => true,
           isRightLogout: () => true,
         }),
-        logActive: false,
       }),
-      ({ appSource }, history) => {
+      ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
         expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(either.right(userMock)),
+          output('setUser$')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
-        expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(errorMock),
-        ]);
+        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
       },
     ),
   );
@@ -79,13 +71,10 @@ describe('App flow', () => {
           isRightLogin: () => false,
           isRightLogout: () => true,
         }),
-        logActive: false,
       }),
-      ({ appSource }, history) => {
+      ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
-        expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(errorMock),
-        ]);
+        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
 
         appSource.dispatch('login')(loginQueryMock);
         expect(history.take()).toStrictEqual([]);
@@ -103,12 +92,11 @@ describe('App flow', () => {
           isRightLogin: () => true,
           isRightLogout: () => false,
         }),
-        logActive: false,
       }),
-      ({ appSource }, history) => {
+      ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
         expect(history.take()).toStrictEqual([
-          ray.create('setUser$')(either.right(userMock)),
+          output('setUser$')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
