@@ -10,7 +10,6 @@ import { Chat } from 'store/chat.store';
 import { messageStoreMock } from 'store/mock/message.store.mock';
 import { option } from 'fp-ts';
 import { User } from 'shared/types';
-import { unorderedEqualStrict } from 'shared/utils/test';
 
 const withChat = test.withMedium(chatMedium);
 
@@ -44,7 +43,7 @@ describe('Chat flow', () => {
 
         chatSource.dispatch('getChats')();
         expect(
-          unorderedEqualStrict(history.take(), [
+          test.unorderedEqualStrict(history.take(), [
             output('joinChats$')(mockChats),
             output('setChats$')(requestResult.success(mockChats)),
           ]),
@@ -52,7 +51,7 @@ describe('Chat flow', () => {
 
         chatSource.dispatch('onChatTabClick')(1);
         expect(
-          unorderedEqualStrict(history.take(), [
+          test.unorderedEqualStrict(history.take(), [
             output('showChat$')(mockChat.id),
             output('setCurrentChat$')(
               requestResult.success({
