@@ -1,4 +1,4 @@
-import { medium, ray } from '@performance-artist/medium';
+import { medium, effect } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import {
   filter,
@@ -6,6 +6,7 @@ import {
   switchMap,
   switchMapTo,
   withLatestFrom,
+  distinctUntilChanged,
 } from 'rxjs/operators';
 import { array, either, option } from 'fp-ts';
 import { observableEither } from 'fp-ts-rxjs';
@@ -39,21 +40,23 @@ export const chatMedium = medium.map(
       switchMapTo(chatStore.chats$),
     );
 
-    const setChats$ = pipe(
+    const setChats = pipe(
       getChats$,
-      ray.infer(chats =>
+      effect.tag('setChats', chats =>
         chatSource.state.modify(state => ({ ...state, chats })),
       ),
     );
 
-    const joinChats$ = pipe(
+    const joinChats = pipe(
       getChats$,
       filter(either.isRight),
       map(chats => chats.right),
-      ray.infer(chats => chats.forEach(chat => chatStore.joinChat(chat.name))),
+      effect.tag('joinChats', chats =>
+        chats.forEach(chat => chatStore.joinChat(chat.name)),
+      ),
     );
 
-    const setCurrentChat$ = pipe(
+    const setCurrentChat = pipe(
       on(chatSource.create('onChatTabClick')),
       switchMap(chatID => {
         const users$ = chatStore.getUsersByChat(chatID);
@@ -79,21 +82,22 @@ export const chatMedium = medium.map(
             users,
             messages,
           })),
+          distinctUntilChanged(),
         );
       }),
-      ray.infer(currentChat =>
+      effect.tag('setCurrentChat', currentChat =>
         chatSource.state.modify(state => ({ ...state, currentChat })),
       ),
     );
 
-    const showChat$ = pipe(
+    const showChat = pipe(
       on(chatSource.create('onChatTabClick')),
-      ray.infer(() => {
+      effect.tag('showChat', () => {
         chatSource.state.modify(state => ({ ...state, isChatOpen: true }));
       }),
     );
 
-    const sendMessage$ = pipe(
+    const sendMessage = pipe(
       on(chatSource.create('onSubmit')),
       withLatestFrom(chatSource.state.value$, appSource.state.value$),
       map(([_, { chats, message, currentChat }, { user }]) =>
@@ -117,17 +121,18 @@ export const chatMedium = medium.map(
           ),
         ),
       ),
-      ray.infer(
+      effect.tag(
+        'sendMessage',
         query => option.isSome(query) && messageStore.sendMessage(query.value),
       ),
     );
 
     return {
-      setChats$,
-      joinChats$,
-      setCurrentChat$,
-      sendMessage$,
-      showChat$,
+      setChats,
+      joinChats,
+      setCurrentChat,
+      sendMessage,
+      showChat,
     };
   },
 );

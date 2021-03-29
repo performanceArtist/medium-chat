@@ -44,16 +44,16 @@ describe('Chat flow', () => {
         chatSource.dispatch('getChats')();
         expect(
           test.unorderedEqualStrict(history.take(), [
-            output('joinChats$')(mockChats),
-            output('setChats$')(requestResult.success(mockChats)),
+            output('joinChats')(mockChats),
+            output('setChats')(requestResult.success(mockChats)),
           ]),
         ).toBe(true);
 
         chatSource.dispatch('onChatTabClick')(1);
         expect(
           test.unorderedEqualStrict(history.take(), [
-            output('showChat$')(mockChat.id),
-            output('setCurrentChat$')(
+            output('showChat')(mockChat.id),
+            output('setCurrentChat')(
               requestResult.success({
                 id: mockChat.id,
                 users: [],
@@ -100,7 +100,7 @@ describe('Chat flow', () => {
         chatSource.dispatch('setMessage')('test');
         chatSource.dispatch('onSubmit')();
         expect(history.take()).toStrictEqual([
-          output('sendMessage$')(
+          output('sendMessage')(
             option.some({
               room: mockChat.name,
               message: {

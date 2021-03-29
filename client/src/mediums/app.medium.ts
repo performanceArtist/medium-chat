@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/lib/pipeable';
-import { medium, ray } from '@performance-artist/medium';
+import { medium, effect } from '@performance-artist/medium';
 import { switchMap } from 'rxjs/operators';
 import * as rxo from 'rxjs/operators';
 import { either } from 'fp-ts';
@@ -30,12 +30,14 @@ export const appMedium = medium.map(
       rxo.filter(either.isRight),
     );
 
-    const setUser$ = pipe(
+    const setUser = pipe(
       rx.merge(on(appSource.create('getUser')), login$, logout$),
       switchMap(userStore.getUser),
-      ray.infer(user => appSource.state.modify(state => ({ ...state, user }))),
+      effect.tag('setUser', user =>
+        appSource.state.modify(state => ({ ...state, user })),
+      ),
     );
 
-    return { setUser$ };
+    return { setUser };
   },
 );

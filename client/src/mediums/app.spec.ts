@@ -25,15 +25,15 @@ describe('App flow', () => {
       }),
       ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
-        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
+        expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
         appSource.dispatch('login')(loginQueryMock);
         expect(history.take()).toStrictEqual([
-          output('setUser$')(either.right(userMock)),
+          output('setUser')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
-        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
+        expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
       },
     ),
   );
@@ -52,11 +52,11 @@ describe('App flow', () => {
       ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
         expect(history.take()).toStrictEqual([
-          output('setUser$')(either.right(userMock)),
+          output('setUser')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();
-        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
+        expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
       },
     ),
   );
@@ -74,7 +74,7 @@ describe('App flow', () => {
       }),
       ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
-        expect(history.take()).toStrictEqual([output('setUser$')(errorMock)]);
+        expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
         appSource.dispatch('login')(loginQueryMock);
         expect(history.take()).toStrictEqual([]);
@@ -96,7 +96,7 @@ describe('App flow', () => {
       ({ appSource }, history, output) => {
         appSource.dispatch('getUser')();
         expect(history.take()).toStrictEqual([
-          output('setUser$')(either.right(userMock)),
+          output('setUser')(either.right(userMock)),
         ]);
 
         appSource.dispatch('logout')();

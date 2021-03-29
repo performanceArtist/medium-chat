@@ -1,17 +1,10 @@
 import { record } from 'fp-ts';
 import { pipe } from 'fp-ts/lib/pipeable';
-import * as rxo from 'rxjs/operators';
-import {
-  AnyAction,
-  Source,
-} from '@performance-artist/medium/dist/source/model';
-import {
-  Carrier,
-  CarrierOutput,
-} from '@performance-artist/medium/dist/carrier/carrier';
+import { AnyAction, Source, carrier, ray } from '@performance-artist/medium';
+import { Carrier } from '@performance-artist/medium/dist/carrier/carrier';
 import { selector } from '@performance-artist/fp-ts-adt';
-import { carrier } from '@performance-artist/medium';
 import { Ray } from '@performance-artist/medium/dist/ray/ray';
+import { EffectTree } from '@performance-artist/medium/dist/effect/effect';
 
 type WithLoggerDeps = {
   logs: {
@@ -23,7 +16,7 @@ type WithLoggerDeps = {
 
 export const withMediumLog = pipe(
   selector.keys<WithLoggerDeps>()('logs'),
-  selector.map(deps => <E, A extends CarrierOutput>(c: Carrier<E, A>) =>
+  selector.map(deps => <E, A extends EffectTree>(c: Carrier<E, A>) =>
     carrier.from({ ...c.sources, ...deps }, action$ => {
       const {
         logs: { active, logMedium },
@@ -33,7 +26,13 @@ export const withMediumLog = pipe(
       return active
         ? (pipe(
             value,
-            record.map(v => pipe(v, rxo.tap(logMedium))),
+            record.map(v => ({
+              ...v,
+              effect: payload => {
+                logMedium(ray.create(v.tag as string)(payload));
+                v.effect(payload);
+              },
+            })),
           ) as A)
         : value;
     }),
@@ -45,12 +44,12 @@ export const withSourceLog = pipe(
   selector.map(
     ({ logs: { active, logSource } }) => <S extends Source<any, any>>(
       s: S,
-    ): S =>
-      active
-        ? {
-            ...s,
-            action$: pipe(s.action$, rxo.tap(logSource), rxo.shareReplay(1)),
-          }
-        : s,
+    ): S => {
+      if (active) {
+        s.action$.subscribe(logSource);
+      }
+
+      return s;
+    },
   ),
 );
