@@ -1,7 +1,6 @@
 import { useSubscription, withHook } from '@performance-artist/react-utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
-import { medium } from '@performance-artist/medium';
 
 import { AppContainer } from 'view/App/AppContainer';
 import { makeApiClient } from './api/api-client';
@@ -9,15 +8,21 @@ import { makeSocketClient } from 'api/socket-client';
 import { makeUserStore } from 'store/user.store';
 import { makeMessageStore } from 'store/message.store';
 import { makeChatStore } from 'store/chat.store';
-import { makeAppSource } from 'view/App/app.source';
+import { AppSource, makeAppSource } from 'view/App/app.source';
 import { appMedium } from 'mediums/app.medium';
-import { withSourceLog, withMediumLog } from 'shared/utils/log';
+import { log } from 'shared/utils/log';
 
 const WithEpic = pipe(
-  selector.combine(AppContainer, appMedium, withMediumLog),
-  selector.map(([AppContainer, appMedium, withMediumLog]) =>
+  selector.combine(
+    AppContainer,
+    appMedium,
+    selector.key<AppSource>()('appSource'),
+    log,
+  ),
+  selector.map(([AppContainer, appMedium, appSource, log]) =>
     withHook(AppContainer)(() => {
-      useSubscription(() => medium.subscribe(withMediumLog(appMedium)), []);
+      useSubscription(() => log.subscribeToSource(appSource), [appSource]);
+      useSubscription(() => log.runMedium(appMedium), [appMedium]);
 
       return {};
     }),
@@ -35,9 +40,8 @@ export const Root = pipe(
     ),
     makeApiClient,
     makeSocketClient,
-    withSourceLog,
   ),
-  selector.map(([WithEpic, makeApiClient, makeSocketClient, withSourceLog]) => {
+  selector.map(([WithEpic, makeApiClient, makeSocketClient]) => {
     const apiClient = makeApiClient();
     const socketClient = makeSocketClient();
 
@@ -46,7 +50,7 @@ export const Root = pipe(
     const chatStore = makeChatStore.run({ apiClient, socketClient })();
 
     return WithEpic.run({
-      appSource: withSourceLog(makeAppSource()),
+      appSource: makeAppSource(),
       userStore,
       chatStore,
       messageStore,
