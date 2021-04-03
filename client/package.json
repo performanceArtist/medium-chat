@@ -37,8 +37,8 @@
   },
   "devDependencies": {
     "@performance-artist/fp-ts-adt": "^1.0.11",
-    "@performance-artist/medium": "^3.0.3",
-    "@performance-artist/react-utils": "^1.0.9",
+    "@performance-artist/medium": "^3.0.9",
+    "@performance-artist/react-utils": "^1.0.13",
     "@performance-artist/rx-utils": "^1.0.3",
     "@types/node": "^13.7.0",
     "@types/react": "^16.9.46",
