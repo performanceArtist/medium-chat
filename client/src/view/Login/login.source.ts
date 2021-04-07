@@ -18,12 +18,8 @@ export type LoginSource = SourceOf<
   }
 >;
 
-const set = source.setFor<LoginState>();
 export const makeLoginSource = (): LoginSource =>
-  source.create(
-    'login',
-    initialState,
-  )({
-    setUsername: set('username'),
-    setPassword: set('password'),
+  source.create(initialState, {
+    setUsername: state => (username: string) => ({ ...state, username }),
+    setPassword: state => (password: string) => ({ ...state, password }),
   });

@@ -41,7 +41,7 @@ describe('Chat flow', () => {
       (deps, history, output) => {
         const { chatSource } = deps;
 
-        chatSource.dispatch('getChats')();
+        chatSource.on.getChats.next();
         expect(
           test.unorderedEqualStrict(history.take(), [
             output('joinChats')(mockChats),
@@ -49,7 +49,7 @@ describe('Chat flow', () => {
           ]),
         ).toBe(true);
 
-        chatSource.dispatch('onChatTabClick')(1);
+        chatSource.on.chatTabClick.next(1);
         expect(
           test.unorderedEqualStrict(history.take(), [
             output('showChat')(mockChat.id),
@@ -97,8 +97,8 @@ describe('Chat flow', () => {
       (deps, history, output) => {
         const { chatSource } = deps;
 
-        chatSource.dispatch('setMessage')('test');
-        chatSource.dispatch('onSubmit')();
+        chatSource.on.setMessage.next('test');
+        chatSource.on.submit.next();
         expect(history.take()).toStrictEqual([
           output('sendMessage')(
             option.some({

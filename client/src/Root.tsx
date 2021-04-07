@@ -21,7 +21,7 @@ const WithEpic = pipe(
   ),
   selector.map(([AppContainer, appMedium, appSource, log]) =>
     withHook(AppContainer)(() => {
-      useSubscription(() => log.subscribeToSource(appSource), [appSource]);
+      useSubscription(() => log.runSource(appSource), [appSource]);
       useSubscription(() => log.runMedium(appMedium), [appMedium]);
 
       return {};

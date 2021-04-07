@@ -24,15 +24,15 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.dispatch('getUser')();
+        appSource.on.getUser.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
-        appSource.dispatch('login')(loginQueryMock);
+        appSource.on.login.next(loginQueryMock);
         expect(history.take()).toStrictEqual([
           output('setUser')(either.right(userMock)),
         ]);
 
-        appSource.dispatch('logout')();
+        appSource.on.logout.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
       },
     ),
@@ -50,12 +50,12 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.dispatch('getUser')();
+        appSource.on.getUser.next();
         expect(history.take()).toStrictEqual([
           output('setUser')(either.right(userMock)),
         ]);
 
-        appSource.dispatch('logout')();
+        appSource.on.logout.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
       },
     ),
@@ -73,10 +73,10 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.dispatch('getUser')();
+        appSource.on.getUser.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
-        appSource.dispatch('login')(loginQueryMock);
+        appSource.on.login.next(loginQueryMock);
         expect(history.take()).toStrictEqual([]);
       },
     ),
@@ -94,12 +94,12 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.dispatch('getUser')();
+        appSource.on.getUser.next();
         expect(history.take()).toStrictEqual([
           output('setUser')(either.right(userMock)),
         ]);
 
-        appSource.dispatch('logout')();
+        appSource.on.logout.next();
         expect(history.take()).toStrictEqual([]);
       },
     ),

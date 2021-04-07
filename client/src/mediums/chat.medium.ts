@@ -32,98 +32,113 @@ export const chatMedium = medium.map(
     'chatStore',
     'messageStore',
   ),
-  (deps, on) => {
+  deps => {
     const { chatSource, chatStore, messageStore, appSource } = deps;
 
-    const getChats$ = pipe(
-      on(chatSource.create('getChats')),
-      switchMapTo(chatStore.chats$),
-    );
-
     const setChats = pipe(
-      getChats$,
-      effect.tag('setChats', chats =>
-        chatSource.state.modify(state => ({ ...state, chats })),
+      chatSource.on.getChats.value,
+      effect.branch(
+        flow(
+          switchMapTo(chatStore.chats$),
+          effect.tag('setChats', chats =>
+            chatSource.state.modify(state => ({ ...state, chats })),
+          ),
+        ),
       ),
     );
 
     const joinChats = pipe(
-      getChats$,
-      filter(either.isRight),
-      map(chats => chats.right),
-      effect.tag('joinChats', chats =>
-        chats.forEach(chat => chatStore.joinChat(chat.name)),
+      setChats,
+      effect.branch(
+        flow(
+          filter(either.isRight),
+          map(chats => chats.right),
+          effect.tag('joinChats', chats =>
+            chats.forEach(chat => chatStore.joinChat(chat.name)),
+          ),
+        ),
       ),
     );
 
     const setCurrentChat = pipe(
-      on(chatSource.create('onChatTabClick')),
-      switchMap(chatID => {
-        const users$ = chatStore.getUsersByChat(chatID);
-        const stored$ = messageStore.getMessagesByChat(chatID);
-        const sent$ = pipe(
-          messageStore.messages$,
-          map(
-            flow(
-              array.filter(message => message.chat_id === chatID),
-              either.right,
-            ),
-          ),
-        );
-        const messages$ = pipe(
-          sequenceT(observableEither.observableEither)(stored$, sent$),
-          observableEither.map(([stored, sent]) => stored.concat(sent)),
-        );
+      chatSource.on.chatTabClick.value,
+      effect.branch(
+        flow(
+          switchMap(chatID => {
+            const users$ = chatStore.getUsersByChat(chatID);
+            const stored$ = messageStore.getMessagesByChat(chatID);
+            const sent$ = pipe(
+              messageStore.messages$,
+              map(
+                flow(
+                  array.filter(message => message.chat_id === chatID),
+                  either.right,
+                ),
+              ),
+            );
+            const messages$ = pipe(
+              sequenceT(observableEither.observableEither)(stored$, sent$),
+              observableEither.map(([stored, sent]) => stored.concat(sent)),
+            );
 
-        return pipe(
-          sequenceT(observableEither.observableEither)(users$, messages$),
-          observableEither.map(([users, messages]) => ({
-            id: chatID,
-            users,
-            messages,
-          })),
-          distinctUntilChanged(),
-        );
-      }),
-      effect.tag('setCurrentChat', currentChat =>
-        chatSource.state.modify(state => ({ ...state, currentChat })),
+            return pipe(
+              sequenceT(observableEither.observableEither)(users$, messages$),
+              observableEither.map(([users, messages]) => ({
+                id: chatID,
+                users,
+                messages,
+              })),
+              distinctUntilChanged(),
+            );
+          }),
+          effect.tag('setCurrentChat', currentChat =>
+            chatSource.state.modify(state => ({ ...state, currentChat })),
+          ),
+        ),
       ),
     );
 
     const showChat = pipe(
-      on(chatSource.create('onChatTabClick')),
-      effect.tag('showChat', () => {
-        chatSource.state.modify(state => ({ ...state, isChatOpen: true }));
-      }),
+      chatSource.on.chatTabClick.value,
+      effect.branch(
+        effect.tag('showChat', () => {
+          chatSource.state.modify(state => ({ ...state, isChatOpen: true }));
+        }),
+      ),
     );
 
     const sendMessage = pipe(
-      on(chatSource.create('onSubmit')),
-      withLatestFrom(chatSource.state.value$, appSource.state.value$),
-      map(([_, { chats, message, currentChat }, { user }]) =>
-        pipe(
-          sequenceT(either.either)(currentChat, chats, user),
-          option.fromEither,
-          option.chain(([currentChat, chats, user]) =>
+      chatSource.on.submit.value,
+      effect.branch(
+        flow(
+          withLatestFrom(chatSource.state.value$, appSource.state.value$),
+          map(([_, { chats, message, currentChat }, { user }]) =>
             pipe(
-              chats,
-              array.findFirst(chat => chat.id === currentChat.id),
-              option.map(chat => ({
-                message: {
-                  text: message,
-                  chat_id: currentChat.id,
-                  user_id: user.id,
-                  timestamp: new Date().getTime(),
-                },
-                room: chat.name,
-              })),
+              sequenceT(either.either)(currentChat, chats, user),
+              option.fromEither,
+              option.chain(([currentChat, chats, user]) =>
+                pipe(
+                  chats,
+                  array.findFirst(chat => chat.id === currentChat.id),
+                  option.map(chat => ({
+                    message: {
+                      text: message,
+                      chat_id: currentChat.id,
+                      user_id: user.id,
+                      timestamp: new Date().getTime(),
+                    },
+                    room: chat.name,
+                  })),
+                ),
+              ),
             ),
           ),
+          effect.tag(
+            'sendMessage',
+            query =>
+              option.isSome(query) && messageStore.sendMessage(query.value),
+          ),
         ),
-      ),
-      effect.tag(
-        'sendMessage',
-        query => option.isSome(query) && messageStore.sendMessage(query.value),
       ),
     );
 

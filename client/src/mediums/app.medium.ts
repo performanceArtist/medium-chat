@@ -15,27 +15,36 @@ export type AppMediumDeps = {
 
 export const appMedium = medium.map(
   medium.id<AppMediumDeps>()('appSource', 'userStore'),
-  (deps, on) => {
+  deps => {
     const { userStore, appSource } = deps;
 
-    const login$ = pipe(
-      on(appSource.create('login')),
-      switchMap(userStore.login),
-      rxo.filter(either.isRight),
-    );
+    const setUser = effect.branches(
+      [
+        appSource.on.login.value,
+        appSource.on.logout.value,
+        appSource.on.getUser.value,
+      ],
+      ([loginEvent$, logoutEvent$, getUser$]) => {
+        const login$ = pipe(
+          loginEvent$,
+          switchMap(userStore.login),
+          rxo.filter(either.isRight),
+        );
 
-    const logout$ = pipe(
-      on(appSource.create('logout')),
-      switchMap(userStore.logout),
-      rxo.filter(either.isRight),
-    );
+        const logout$ = pipe(
+          logoutEvent$,
+          switchMap(userStore.logout),
+          rxo.filter(either.isRight),
+        );
 
-    const setUser = pipe(
-      rx.merge(on(appSource.create('getUser')), login$, logout$),
-      switchMap(userStore.getUser),
-      effect.tag('setUser', user =>
-        appSource.state.modify(state => ({ ...state, user })),
-      ),
+        return pipe(
+          rx.merge(getUser$, login$, logout$),
+          switchMap(userStore.getUser),
+          effect.tag('setUser', user =>
+            appSource.state.modify(state => ({ ...state, user })),
+          ),
+        );
+      },
     );
 
     return { setUser };

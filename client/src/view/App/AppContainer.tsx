@@ -19,7 +19,7 @@ export const AppContainer = pipe(
       const state = useBehavior(appSource.state);
 
       useEffect(() => {
-        appSource.dispatch('getUser')();
+        appSource.on.getUser.next();
       }, []);
 
       return { user: state.user };

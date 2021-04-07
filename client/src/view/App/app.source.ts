@@ -20,10 +20,7 @@ export type AppSource = SourceOf<
 >;
 
 export const makeAppSource = (): AppSource =>
-  source.create(
-    'app',
-    initialState,
-  )({
+  source.create(initialState, {
     getUser: source.input(),
     login: source.input(),
     logout: source.input(),

@@ -21,16 +21,16 @@ export const LoginContainer = pipe(
     withHook(Login)(() => {
       const { appSource } = deps;
       const loginSource = useMemo(() => makeLoginSource(), []);
-      useSubscription(() => log.subscribeToSource(loginSource), [loginSource]);
+      useSubscription(() => log.runSource(loginSource), [loginSource]);
       const state = useBehavior(loginSource.state);
 
       return {
         username: state.username,
-        onUsernameChange: loginSource.dispatch('setUsername'),
-        onPasswordChange: loginSource.dispatch('setPassword'),
+        onUsernameChange: loginSource.on.setUsername.next,
+        onPasswordChange: loginSource.on.setPassword.next,
         password: state.password,
         onSubmit: () =>
-          appSource.dispatch('login')({
+          appSource.on.login.next({
             username: state.username,
             password: state.password,
           }),

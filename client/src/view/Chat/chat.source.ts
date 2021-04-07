@@ -33,20 +33,16 @@ export type ChatSource = SourceOf<
   ChatState,
   {
     getChats: void;
-    onChatTabClick: number;
+    chatTabClick: number;
     setMessage: string;
-    onSubmit: void;
+    submit: void;
   }
 >;
 
-const set = source.setFor<ChatState>();
 export const makeChatSource = (): ChatSource =>
-  source.create(
-    'chat',
-    initialState,
-  )({
+  source.create(initialState, {
     getChats: source.input(),
-    onChatTabClick: source.input(),
-    setMessage: set('message'),
-    onSubmit: source.input(),
+    chatTabClick: source.input(),
+    setMessage: state => (message: string) => ({ ...state, message }),
+    submit: source.input(),
   });

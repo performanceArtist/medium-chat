@@ -15,7 +15,7 @@ export const LogoutContainer = pipe(
       const { appSource } = deps;
 
       return {
-        onLogout: appSource.dispatch('logout'),
+        onLogout: appSource.on.logout.next,
       };
     }),
   ),

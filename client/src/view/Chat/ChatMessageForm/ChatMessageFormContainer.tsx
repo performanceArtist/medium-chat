@@ -17,8 +17,8 @@ export const ChatMessageFormContainer = pipe(
 
       return {
         message: state.message,
-        onMessageChange: chatSource.dispatch('setMessage'),
-        onSubmit: chatSource.dispatch('onSubmit'),
+        onMessageChange: chatSource.on.setMessage.next,
+        onSubmit: chatSource.on.submit.next,
       };
     }),
   ),
