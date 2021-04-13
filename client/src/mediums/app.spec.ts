@@ -24,7 +24,7 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.on.getUser.next();
+        appSource.on.mount.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
         appSource.on.login.next(loginQueryMock);
@@ -50,7 +50,7 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.on.getUser.next();
+        appSource.on.mount.next();
         expect(history.take()).toStrictEqual([
           output('setUser')(either.right(userMock)),
         ]);
@@ -73,7 +73,7 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.on.getUser.next();
+        appSource.on.mount.next();
         expect(history.take()).toStrictEqual([output('setUser')(errorMock)]);
 
         appSource.on.login.next(loginQueryMock);
@@ -94,7 +94,7 @@ describe('App flow', () => {
         }),
       }),
       ({ appSource }, history, output) => {
-        appSource.on.getUser.next();
+        appSource.on.mount.next();
         expect(history.take()).toStrictEqual([
           output('setUser')(either.right(userMock)),
         ]);

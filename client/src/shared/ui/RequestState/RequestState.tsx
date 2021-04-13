@@ -9,21 +9,31 @@ type RequestStateProps<T> = {
   onSuccess: (result: T) => JSX.Element;
 };
 
-const onError = (error: Error) => <h2>{error.toString()}</h2>;
-const onPending = () => <Preloader />;
-const onInitial = () => <Preloader />;
-
-export const RequestState = function<T>({
-  data,
-  onSuccess,
-}: RequestStateProps<T>) {
-  return (
-    <RequestStateRenderer
-      onError={onError}
-      onPending={onPending}
-      onInitial={onInitial}
-      onSuccess={onSuccess}
-      data={data}
-    />
-  );
+type RequestStateDefaults = {
+  onError?: (error: Error) => JSX.Element;
+  onPending?: () => JSX.Element;
+  onInitial?: () => JSX.Element;
 };
+
+const onErrorDefault = (error: Error) => <h2>{error.toString()}</h2>;
+const onPendingDefault = () => <Preloader />;
+const onInitialDefault = () => <Preloader />;
+
+export const makeRequestState = ({
+  onError,
+  onInitial,
+  onPending,
+}: RequestStateDefaults) =>
+  function<T>({ data, onSuccess }: RequestStateProps<T>) {
+    return (
+      <RequestStateRenderer
+        onError={onError || onErrorDefault}
+        onPending={onPending || onPendingDefault}
+        onInitial={onInitial || onInitialDefault}
+        onSuccess={onSuccess}
+        data={data}
+      />
+    );
+  };
+
+export const RequestState = makeRequestState({});

@@ -41,27 +41,22 @@ describe('Chat flow', () => {
       (deps, history, output) => {
         const { chatSource } = deps;
 
-        chatSource.on.getChats.next();
-        expect(
-          test.unorderedEqualStrict(history.take(), [
-            output('joinChats')(mockChats),
-            output('setChats')(requestResult.success(mockChats)),
-          ]),
-        ).toBe(true);
+        chatSource.on.mount.next();
+        expect(history.take()).toStrictEqual([
+          output('setChats')(requestResult.success(mockChats)),
+          output('joinChats')(mockChats),
+        ]);
 
         chatSource.on.chatTabClick.next(1);
-        expect(
-          test.unorderedEqualStrict(history.take(), [
-            output('showChat')(mockChat.id),
-            output('setCurrentChat')(
-              requestResult.success({
-                id: mockChat.id,
-                users: [],
-                messages: [],
-              }),
-            ),
-          ]),
-        ).toBe(true);
+        expect(history.take()).toStrictEqual([
+          output('setCurrentChat')(
+            requestResult.success({
+              id: mockChat.id,
+              users: [],
+              messages: [],
+            }),
+          ),
+        ]);
       },
     ),
   );

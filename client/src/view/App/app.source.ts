@@ -13,7 +13,7 @@ export const initialState: AppState = {
 export type AppSource = SourceOf<
   AppState,
   {
-    getUser: void;
+    mount: void;
     login: { username: string; password: string };
     logout: void;
   }
@@ -21,7 +21,7 @@ export type AppSource = SourceOf<
 
 export const makeAppSource = (): AppSource =>
   source.create(initialState, {
-    getUser: source.input(),
+    mount: source.input(),
     login: source.input(),
     logout: source.input(),
   });

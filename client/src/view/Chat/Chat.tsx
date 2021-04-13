@@ -17,7 +17,6 @@ export type Chat = {
 export type ChatProps = {
   chats: RequestResult<Chat[]>;
   onChatTabClick: (chatID: number) => void;
-  isChatOpen: boolean;
 };
 
 export const Chat = pipe(
@@ -25,7 +24,7 @@ export const Chat = pipe(
   selector.map(ChatLayoutContainer =>
     withData<ChatProps>()(['chats'], (data, props) => {
       const { chats } = data;
-      const { onChatTabClick, isChatOpen } = props;
+      const { onChatTabClick } = props;
 
       return (
         <div className="chat">
@@ -40,7 +39,7 @@ export const Chat = pipe(
             ))}
           </div>
           <div className="chat__content">
-            {isChatOpen && <ChatLayoutContainer />}
+            <ChatLayoutContainer />
           </div>
         </div>
       );

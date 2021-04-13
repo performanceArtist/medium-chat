@@ -22,9 +22,9 @@ export const appMedium = medium.map(
       [
         appSource.on.login.value,
         appSource.on.logout.value,
-        appSource.on.getUser.value,
+        appSource.on.mount.value,
       ],
-      ([loginEvent$, logoutEvent$, getUser$]) => {
+      ([loginEvent$, logoutEvent$, mountEvent$]) => {
         const login$ = pipe(
           loginEvent$,
           switchMap(userStore.login),
@@ -38,7 +38,7 @@ export const appMedium = medium.map(
         );
 
         return pipe(
-          rx.merge(getUser$, login$, logout$),
+          rx.merge(mountEvent$, login$, logout$),
           switchMap(userStore.getUser),
           effect.tag('setUser', user =>
             appSource.state.modify(state => ({ ...state, user })),

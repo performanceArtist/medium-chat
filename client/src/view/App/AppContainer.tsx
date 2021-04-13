@@ -19,7 +19,7 @@ export const AppContainer = pipe(
       const state = useBehavior(appSource.state);
 
       useEffect(() => {
-        appSource.on.getUser.next();
+        appSource.on.mount.next();
       }, []);
 
       return { user: state.user };

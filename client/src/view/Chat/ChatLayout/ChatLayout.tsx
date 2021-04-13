@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { array, option, ord } from 'fp-ts';
 import { ordNumber } from 'fp-ts/lib/Ord';
 import { RequestResult, selector } from '@performance-artist/fp-ts-adt';
 import { pick } from '@performance-artist/fp-ts-adt/dist/utils';
+import { makeWithData } from '@performance-artist/react-utils';
 
 import { ChatMessageFormContainer } from 'view/Chat/ChatMessageForm/ChatMessageFormContainer';
-import { useScroll, withData } from 'shared/utils/react';
+import { useScroll } from 'shared/utils/react';
 import { ChatMessage } from 'view/Chat/ChatMessage/ChatMessage';
 import { User } from 'shared/types';
+import { makeRequestState } from 'shared/ui/RequestState/RequestState';
+
 import './ChatLayout.scss';
 
 export type MessageType = {
@@ -23,6 +26,9 @@ type ChatLayoutProps = {
   chatUsers: RequestResult<User[]>;
   messages: RequestResult<MessageType[]>;
 };
+
+const RequestState = makeRequestState({ onInitial: () => <Fragment /> });
+const withData = makeWithData(RequestState);
 
 export const ChatLayout = pipe(
   ChatMessageFormContainer,

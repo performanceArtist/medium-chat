@@ -19,20 +19,18 @@ export type ChatState = {
   chats: RequestResult<Chat[]>;
   currentChat: RequestResult<CurrentChat>;
   message: string;
-  isChatOpen: boolean;
 };
 
 export const initialState: ChatState = {
   chats: requestResult.initial,
   currentChat: requestResult.initial,
   message: '',
-  isChatOpen: false,
 };
 
 export type ChatSource = SourceOf<
   ChatState,
   {
-    getChats: void;
+    mount: void;
     chatTabClick: number;
     setMessage: string;
     submit: void;
@@ -41,7 +39,7 @@ export type ChatSource = SourceOf<
 
 export const makeChatSource = (): ChatSource =>
   source.create(initialState, {
-    getChats: source.input(),
+    mount: source.input(),
     chatTabClick: source.input(),
     setMessage: state => (message: string) => ({ ...state, message }),
     submit: source.input(),

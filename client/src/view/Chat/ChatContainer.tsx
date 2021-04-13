@@ -20,11 +20,11 @@ export const ChatContainer = pipe(
       useSubscription(() => log.runSource(chatSource), [chatSource]);
       useSubscription(
         () => pipe(chatMedium.run({ chatSource }), log.runMedium),
-        [chatSource, chatMedium],
+        [chatSource],
       );
 
       useEffect(() => {
-        chatSource.on.getChats.next();
+        chatSource.on.mount.next();
       }, []);
 
       const Chat = useMemo(() => makeChat.run({ chatSource }), []);
@@ -33,7 +33,6 @@ export const ChatContainer = pipe(
 
       return createElement(Chat, {
         chats: state.chats,
-        isChatOpen: state.isChatOpen,
         onChatTabClick: chatSource.on.chatTabClick.next,
       });
     }),

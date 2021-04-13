@@ -36,7 +36,7 @@ export const chatMedium = medium.map(
     const { chatSource, chatStore, messageStore, appSource } = deps;
 
     const setChats = pipe(
-      chatSource.on.getChats.value,
+      chatSource.on.mount.value,
       effect.branch(
         flow(
           switchMapTo(chatStore.chats$),
@@ -98,15 +98,6 @@ export const chatMedium = medium.map(
       ),
     );
 
-    const showChat = pipe(
-      chatSource.on.chatTabClick.value,
-      effect.branch(
-        effect.tag('showChat', () => {
-          chatSource.state.modify(state => ({ ...state, isChatOpen: true }));
-        }),
-      ),
-    );
-
     const sendMessage = pipe(
       chatSource.on.submit.value,
       effect.branch(
@@ -147,7 +138,6 @@ export const chatMedium = medium.map(
       joinChats,
       setCurrentChat,
       sendMessage,
-      showChat,
     };
   },
 );
