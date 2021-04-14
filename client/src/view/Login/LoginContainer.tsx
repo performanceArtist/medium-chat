@@ -5,19 +5,19 @@ import { selector } from '@performance-artist/fp-ts-adt';
 import { AppSource } from 'view/App/app.source';
 import { useMemo } from 'react';
 import { makeLoginSource } from './login.source';
-import { log } from 'shared/utils/log';
+import { appContext } from 'app-context/app-context';
 
 type Deps = {
   appSource: AppSource;
 };
 
 export const LoginContainer = pipe(
-  selector.combine(selector.keys<Deps>()('appSource'), log),
-  selector.map(([deps, log]) =>
+  selector.combine(selector.keys<Deps>()('appSource'), appContext),
+  selector.map(([deps, appContext]) =>
     withHook(Login)(() => {
       const { appSource } = deps;
       const loginSource = useMemo(() => makeLoginSource(), []);
-      log.useSource(loginSource);
+      appContext.useSource(loginSource);
       const state = useBehavior(loginSource.state);
 
       return {

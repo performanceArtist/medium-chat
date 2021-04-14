@@ -3,7 +3,7 @@ import { pipe } from 'fp-ts/lib/function';
 import { selector } from '@performance-artist/fp-ts-adt';
 import { useBehavior } from '@performance-artist/react-utils';
 import { chatMedium } from 'mediums/chat.medium';
-import { log } from 'shared/utils/log';
+import { appContext } from 'app-context/app-context';
 
 import { Chat } from './Chat';
 import { makeChatSource } from './chat.source';
@@ -12,13 +12,13 @@ export const ChatContainer = pipe(
   selector.combine(
     selector.defer(Chat, 'chatSource'),
     selector.defer(chatMedium, 'chatSource'),
-    log,
+    appContext,
   ),
-  selector.map(([makeChat, chatMedium, log]) =>
+  selector.map(([makeChat, chatMedium, appContext]) =>
     memo(() => {
       const chatSource = useMemo(() => makeChatSource(), []);
-      log.useSource(chatSource);
-      log.useMedium(chatMedium, { chatSource });
+      appContext.useSource(chatSource);
+      appContext.useMedium(chatMedium, { chatSource });
 
       useEffect(() => {
         chatSource.on.mount.next();

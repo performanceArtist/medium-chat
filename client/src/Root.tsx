@@ -9,20 +9,24 @@ import { makeMessageStore } from 'store/message.store';
 import { makeChatStore } from 'store/chat.store';
 import { makeAppSource } from 'view/App/app.source';
 import { appMedium } from 'mediums/app.medium';
-import { log } from 'shared/utils/log';
 import { createElement, memo, useMemo } from 'react';
+import { appContext } from 'app-context/app-context';
+import { tracedLog } from 'app-context/traced-logger/logger';
+import { useSubscription } from '@performance-artist/react-utils';
+import { source } from '@performance-artist/medium';
+import { makeLoggerSource } from 'app-context/traced-logger/view/logger.source';
 
 const WithSources = pipe(
   selector.combine(
     selector.defer(AppContainer, 'appSource'),
     selector.defer(appMedium, 'appSource'),
-    log,
+    appContext,
   ),
-  selector.map(([makeAppContainer, appMedium, log]) =>
+  selector.map(([makeAppContainer, appMedium, appContext]) =>
     memo(() => {
       const appSource = useMemo(makeAppSource, []);
-      log.useSource(appSource);
-      log.useMedium(appMedium, { appSource });
+      appContext.useSource(appSource);
+      appContext.useMedium(appMedium, { appSource });
       const AppContainer = makeAppContainer.run({ appSource });
 
       return createElement(AppContainer);
@@ -30,9 +34,31 @@ const WithSources = pipe(
   ),
 );
 
+const WithAppContext = pipe(
+  selector.combine(
+    selector.defer(WithSources, 'useMedium', 'useSource'),
+    tracedLog,
+  ),
+  selector.map(([WithSources, { useMedium, useSource }]) =>
+    WithSources.run({ useMedium, useSource }),
+  ),
+);
+
+const WithLogSource = pipe(
+  selector.defer(WithAppContext, 'loggerSource'),
+  selector.map(Component =>
+    memo(() => {
+      const loggerSource = useMemo(makeLoggerSource, []);
+      useSubscription(() => source.subscribe(loggerSource), [loggerSource]);
+
+      return createElement(Component.run({ loggerSource }));
+    }),
+  ),
+);
+
 export const Root = pipe(
   selector.combine(
-    selector.defer(WithSources, 'chatStore', 'messageStore', 'userStore'),
+    selector.defer(WithLogSource, 'chatStore', 'messageStore', 'userStore'),
     makeApiClient,
     makeSocketClient,
   ),

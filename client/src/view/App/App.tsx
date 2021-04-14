@@ -7,14 +7,15 @@ import { pipe } from 'fp-ts/lib/pipeable';
 import { Preloader } from 'shared/ui/Preloader/Preloader';
 import { LoginContainer } from 'view/Login/LoginContainer';
 import { Authorized } from 'view/Authorized/Authorized';
+import { LoggerContainer } from 'app-context/traced-logger/view/logger.container';
 
 type AppProps = {
   user: RequestResult<unknown>;
 };
 
 export const App = pipe(
-  selector.combine(LoginContainer, Authorized),
-  selector.map(([LoginContainer, Authorized]) =>
+  selector.combine(LoginContainer, Authorized, LoggerContainer),
+  selector.map(([LoginContainer, Authorized, LoggerContainer]) =>
     memo<AppProps>(props => {
       const { user } = props;
 
@@ -40,13 +41,18 @@ export const App = pipe(
       );
 
       return (
-        <RequestStateRenderer
-          data={user}
-          onInitial={renderPending}
-          onPending={renderPending}
-          onError={renderError}
-          onSuccess={renderSuccess}
-        />
+        <div style={{ display: 'flex' }}>
+          <div style={{ maxWidth: 480, maxHeight: 600, overflow: 'scroll' }}>
+            <LoggerContainer />
+          </div>
+          <RequestStateRenderer
+            data={user}
+            onInitial={renderPending}
+            onPending={renderPending}
+            onError={renderError}
+            onSuccess={renderSuccess}
+          />
+        </div>
       );
     }),
   ),
