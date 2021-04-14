@@ -1,9 +1,5 @@
 import { Login } from './Login';
-import {
-  useBehavior,
-  useSubscription,
-  withHook,
-} from '@performance-artist/react-utils';
+import { useBehavior, withHook } from '@performance-artist/react-utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
 import { AppSource } from 'view/App/app.source';
@@ -21,7 +17,7 @@ export const LoginContainer = pipe(
     withHook(Login)(() => {
       const { appSource } = deps;
       const loginSource = useMemo(() => makeLoginSource(), []);
-      useSubscription(() => log.runSource(loginSource), [loginSource]);
+      log.useSource(loginSource);
       const state = useBehavior(loginSource.state);
 
       return {

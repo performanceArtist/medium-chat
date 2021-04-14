@@ -1,5 +1,5 @@
 import { pipe } from 'fp-ts/lib/pipeable';
-import { medium, effect } from '@performance-artist/medium';
+import { effect } from '@performance-artist/medium';
 import { switchMap } from 'rxjs/operators';
 import * as rxo from 'rxjs/operators';
 import { either } from 'fp-ts';
@@ -7,15 +7,16 @@ import * as rx from 'rxjs';
 
 import { AppSource } from 'view/App/app.source';
 import { UserStore } from 'store/user.store';
+import { selector } from '@performance-artist/fp-ts-adt';
 
 export type AppMediumDeps = {
   userStore: UserStore;
   appSource: AppSource;
 };
 
-export const appMedium = medium.map(
-  medium.id<AppMediumDeps>()('appSource', 'userStore'),
-  deps => {
+export const appMedium = pipe(
+  selector.keys<AppMediumDeps>()('appSource', 'userStore'),
+  selector.map(deps => {
     const { userStore, appSource } = deps;
 
     const setUser = effect.branches(
@@ -48,5 +49,5 @@ export const appMedium = medium.map(
     );
 
     return { setUser };
-  },
+  }),
 );

@@ -1,4 +1,4 @@
-import { medium, effect } from '@performance-artist/medium';
+import { effect } from '@performance-artist/medium';
 import { pipe } from 'fp-ts/lib/pipeable';
 import {
   filter,
@@ -17,6 +17,7 @@ import { ChatStore } from 'store/chat.store';
 import { ChatSource } from 'view/Chat/chat.source';
 import { MessageStore } from 'store/message.store';
 import { AppSource } from 'view/App/app.source';
+import { selector } from '@performance-artist/fp-ts-adt';
 
 export type ChatMediumDeps = {
   chatSource: ChatSource;
@@ -25,14 +26,14 @@ export type ChatMediumDeps = {
   messageStore: MessageStore;
 };
 
-export const chatMedium = medium.map(
-  medium.id<ChatMediumDeps>()(
+export const chatMedium = pipe(
+  selector.keys<ChatMediumDeps>()(
     'appSource',
     'chatSource',
     'chatStore',
     'messageStore',
   ),
-  deps => {
+  selector.map(deps => {
     const { chatSource, chatStore, messageStore, appSource } = deps;
 
     const setChats = pipe(
@@ -139,5 +140,5 @@ export const chatMedium = medium.map(
       setCurrentChat,
       sendMessage,
     };
-  },
+  }),
 );

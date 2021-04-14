@@ -1,4 +1,3 @@
-import { useSubscription, withHook } from '@performance-artist/react-utils';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { selector } from '@performance-artist/fp-ts-adt';
 
@@ -8,40 +7,36 @@ import { makeSocketClient } from 'api/socket-client';
 import { makeUserStore } from 'store/user.store';
 import { makeMessageStore } from 'store/message.store';
 import { makeChatStore } from 'store/chat.store';
-import { AppSource, makeAppSource } from 'view/App/app.source';
+import { makeAppSource } from 'view/App/app.source';
 import { appMedium } from 'mediums/app.medium';
 import { log } from 'shared/utils/log';
+import { createElement, memo, useMemo } from 'react';
 
-const WithEpic = pipe(
+const WithSources = pipe(
   selector.combine(
-    AppContainer,
-    appMedium,
-    selector.key<AppSource>()('appSource'),
+    selector.defer(AppContainer, 'appSource'),
+    selector.defer(appMedium, 'appSource'),
     log,
   ),
-  selector.map(([AppContainer, appMedium, appSource, log]) =>
-    withHook(AppContainer)(() => {
-      useSubscription(() => log.runSource(appSource), [appSource]);
-      useSubscription(() => log.runMedium(appMedium), [appMedium]);
+  selector.map(([makeAppContainer, appMedium, log]) =>
+    memo(() => {
+      const appSource = useMemo(makeAppSource, []);
+      log.useSource(appSource);
+      log.useMedium(appMedium, { appSource });
+      const AppContainer = makeAppContainer.run({ appSource });
 
-      return {};
+      return createElement(AppContainer);
     }),
   ),
 );
 
 export const Root = pipe(
   selector.combine(
-    selector.defer(
-      WithEpic,
-      'appSource',
-      'chatStore',
-      'messageStore',
-      'userStore',
-    ),
+    selector.defer(WithSources, 'chatStore', 'messageStore', 'userStore'),
     makeApiClient,
     makeSocketClient,
   ),
-  selector.map(([WithEpic, makeApiClient, makeSocketClient]) => {
+  selector.map(([WithSources, makeApiClient, makeSocketClient]) => {
     const apiClient = makeApiClient();
     const socketClient = makeSocketClient();
 
@@ -49,8 +44,7 @@ export const Root = pipe(
     const messageStore = makeMessageStore.run({ apiClient, socketClient })();
     const chatStore = makeChatStore.run({ apiClient, socketClient })();
 
-    return WithEpic.run({
-      appSource: makeAppSource(),
+    return WithSources.run({
       userStore,
       chatStore,
       messageStore,
