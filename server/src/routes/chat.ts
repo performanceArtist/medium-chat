@@ -1,78 +1,55 @@
 import { Router } from 'express';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { array, taskEither, either } from 'fp-ts';
-import { flow } from 'fp-ts/lib/function';
+import { either, reader } from 'fp-ts';
 
-import { pick, sendError } from 'utils';
-import {
-  getUsersByChat,
-  getChatsByUser,
-  getMessages,
-  saveMessage,
-} from 'controllers/chat';
-import { MessageScheme } from 'model/entities';
+import { makeChatController } from 'controllers/chat';
+import { sendError } from 'utils';
 
-import * as validate from './validators';
+export const ChatRouter = pipe(
+  makeChatController,
+  reader.map((chatController) => {
+    const ChatRouter = Router();
 
-export const ChatRouter = Router();
-
-ChatRouter.get('/all', (req, res) => {
-  pipe(
-    either.fromNullable('No user id')(req.user?.id),
-    either.bimap(sendError(res), (userID) =>
-      pipe(
-        getChatsByUser(userID),
-        taskEither.bimap(sendError(res)('Failed to get chats'), (chats) =>
-          res.json(chats),
-        ),
-      )(),
-    ),
-  );
-});
-
-ChatRouter.get('/users', (req, res) => {
-  pipe(
-    validate.chatID(req.query),
-    either.bimap(sendError(res), (chatID) =>
-      pipe(
-        getUsersByChat(chatID),
-        taskEither.bimap(
-          sendError(res),
-          flow(array.map(pick('id', 'username', 'avatar')), (users) =>
-            res.json({ chatID, users }),
+    ChatRouter.get('/all', (req, res) =>
+      chatController
+        .getChats(req)()
+        .then(
+          either.fold(sendError(res)('Failed to get chats'), (out) =>
+            res.json(out),
           ),
         ),
-      )(),
-    ),
-  );
-});
+    );
 
-ChatRouter.get('/messages', (req, res) => {
-  pipe(
-    validate.chatID(req.query),
-    either.bimap(sendError(res), (chatID) =>
-      pipe(
-        getMessages(chatID),
-        taskEither.bimap(sendError(res), (messages) => res.json(messages)),
-      )(),
-    ),
-  );
-});
+    ChatRouter.get('/users', (req, res) =>
+      chatController
+        .getUsers(req)()
+        .then(
+          either.fold(sendError(res)('Failed to get users'), (out) =>
+            res.json(out),
+          ),
+        ),
+    );
 
-ChatRouter.post('/send/:room', (req, res) => {
-  const { room } = req.params;
-  const { message } = req.body;
+    ChatRouter.get('/messages', (req, res) =>
+      chatController
+        .getMessages(req)()
+        .then(
+          either.fold(sendError(res)('Failed to get messages'), (out) =>
+            res.json(out),
+          ),
+        ),
+    );
 
-  pipe(
-    MessageScheme.decode(message),
-    either.bimap(sendError(res)('Invalid message'), (message) =>
-      pipe(
-        saveMessage(message),
-        taskEither.bimap(sendError(res)('Failed to save a message'), () => {
-          req.io.sockets.in(room).emit('message', { room, message });
-          res.sendStatus(200);
-        }),
-      )(),
-    ),
-  );
-});
+    ChatRouter.get('/send/:room', (req, res) =>
+      chatController
+        .sendMessage(req)()
+        .then(
+          either.fold(sendError(res)('Failed to send message'), () =>
+            res.json('Ok'),
+          ),
+        ),
+    );
+
+    return ChatRouter;
+  }),
+);

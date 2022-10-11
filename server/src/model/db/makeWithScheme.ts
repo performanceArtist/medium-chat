@@ -4,12 +4,13 @@ import { tryCatch, chainEitherK, TaskEither } from 'fp-ts/lib/TaskEither';
 import { flow } from 'fp-ts/lib/function';
 import { either } from 'fp-ts';
 
-import { db } from './db';
+import { serverError, ServerError } from 'utils';
+import { db } from './init';
 
 const makeDBQuery = (query: string, params: any[], once = false) => {
   const exec = once ? db.get.bind(db) : db.all.bind(db);
 
-  return tryCatch<Error, unknown>(
+  return tryCatch<ServerError, unknown>(
     () =>
       new Promise((resolve, reject) => {
         exec(query, params, (error: Error, result: unknown) => {
@@ -20,14 +21,19 @@ const makeDBQuery = (query: string, params: any[], once = false) => {
           }
         });
       }),
-    (error: any) => {
+    (error) => {
       console.log(error);
-      return error;
+      return serverError(String(error));
     },
   );
 };
 
-const makeWhereString = (where: { [key: string]: any }) => {
+const makeWhereString = (where: { [key: string]: unknown }) => {
+  if (Object.keys(where).length === 1) {
+    const [key] = Object.entries(where)[0];
+    return `${key}=?`;
+  }
+
   return Object.entries(where)
     .map(([key, value], index) =>
       Array.isArray(value)
@@ -48,17 +54,21 @@ export const makeWithScheme = <T extends TypeC<any>>(
   table: string,
 ) => {
   const makeSelect = <O extends boolean>(once: O) => (
-    where: Partial<WithArray<TypeOf<T>>>,
+    where: Partial<WithArray<TypeOf<T>>> = {},
     what?: keyof TypeOf<T>[],
-  ): TaskEither<Error, O extends true ? TypeOf<T> : TypeOf<T>[]> => {
+  ): TaskEither<ServerError, O extends true ? TypeOf<T> : TypeOf<T>[]> => {
     const whatQuery = what ? (what as any).join(',') : '*';
     const whereQuery = makeWhereString(where);
-    const sql = `SELECT ${whatQuery} from ${table} WHERE ${whereQuery}`;
+    const sql =
+      Object.keys(where).length === 0
+        ? `SELECT ${whatQuery} from ${table}`
+        : `SELECT ${whatQuery} from ${table} WHERE ${whereQuery}`;
     const data = makeDBQuery(sql, Object.values(where), once);
+
     const decode = once ? scheme.decode : IOArray(scheme).decode;
     const withError = flow(
       decode,
-      either.mapLeft((errors) => new Error(failure(errors).join('\n'))),
+      either.mapLeft((errors) => serverError(failure(errors).join('\n'))),
     );
 
     return chainEitherK(withError)(data) as any;
