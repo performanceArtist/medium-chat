@@ -1,9 +1,14 @@
 import { Response } from 'express';
+import { isServerError } from './serverError';
 
 export const sendError = (res: Response) => (
-  error: string | Error,
+  error: unknown,
   status = 500,
 ) => () => {
   console.log('Error:', error);
-  res.status(status).send(typeof error === 'string' ? error : String(error));
+  const response = isServerError(error)
+    ? 'Something went wrong'
+    : String(error);
+    
+  res.status(status).send(response);
 };

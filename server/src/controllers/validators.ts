@@ -3,10 +3,10 @@ import { either } from 'fp-ts';
 import { Either } from 'fp-ts/lib/Either';
 import { flow, not } from 'fp-ts/lib/function';
 
-import { pick } from 'utils';
+import { serverError, ServerError } from 'utils';
 
 const makeValidator = <T>(
-  validate: (o: { [key: string]: any }) => Either<string, T>,
+  validate: (o: { [key: string]: any }) => Either<ServerError, T>,
 ) => (o: { [key: string]: any }) => validate(o);
 
 const notNaN = flow(Number, not(Number.isNaN));
@@ -19,8 +19,8 @@ const checkInt = (input: any): Either<string, number> =>
 
 export const chatID = makeValidator(
   flow(
-    pick('chatID'),
+    ({ chatID }) => chatID,
     checkInt,
-    either.mapLeft((e) => `Invalid chat id: ${e}`),
+    either.mapLeft((e) => serverError(`Invalid chat id: ${e}`)),
   ),
 );

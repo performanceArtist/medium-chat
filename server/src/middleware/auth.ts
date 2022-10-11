@@ -2,20 +2,17 @@ import { Express, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import session from 'express-session';
-import SessionFileStore from 'session-file-store';
-const FileStore = SessionFileStore(session);
 import * as Either from 'fp-ts/lib/Either';
 import { bimap } from 'fp-ts/lib/TaskEither';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { flow } from 'fp-ts/lib/function';
-
-import { pick } from 'utils';
 
 import {
   UserScheme,
   withUserScheme,
   comparePasswords,
 } from 'model/entities/user';
+import { serverError } from 'utils';
 
 declare global {
   namespace Express {
@@ -41,7 +38,7 @@ passport.use(
           (user) =>
             comparePasswords(user.password, password)
               ? done(null, user)
-              : done(new Error('Wrong password')),
+              : done(serverError('Wrong password')),
         ),
       )();
     },
@@ -52,7 +49,7 @@ passport.serializeUser((user, done) => {
   Either.fold(
     (errors) => {
       console.log(errors);
-      done(new Error('Invalid user'));
+      done(serverError('Invalid user'));
     },
     (user) => {
       done(null, (user as any).uid);
@@ -65,23 +62,30 @@ passport.deserializeUser((uid: string, done) => {
     withUserScheme.selectOne({ uid }),
     bimap(
       (error) => done(error),
-      flow(pick('id', 'username', 'avatar'), (user) => done(null, user)),
+      flow(
+        ({ id, username, avatar }) => ({ id, username, avatar }),
+        (user) => done(null, user),
+      ),
     ),
   )();
 });
 
-export const useAuth = (app: Express) => {
-  app.use(
-    session({
-      secret: 'kek pok',
-      cookie: {
-        secure: false,
-      },
-      store: new FileStore({ path: 'src/model/sessions' }),
-      resave: false,
-      saveUninitialized: false,
-    }),
-  );
+export type UseAuthParams = {
+  app: Express;
+  sessionOptions: session.SessionOptions;
+  onLogin?: () => void;
+  onLogout?: () => void;
+};
+
+export const useAuth = (params: UseAuthParams) => {
+  const {
+    app,
+    sessionOptions,
+    onLogin = () => {},
+    onLogout = () => {},
+  } = params;
+
+  app.use(session(sessionOptions));
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -91,6 +95,7 @@ export const useAuth = (app: Express) => {
         if (error) {
           res.status(401).send(error);
         } else {
+          onLogin();
           res.status(200).send();
         }
       });
@@ -99,6 +104,9 @@ export const useAuth = (app: Express) => {
 
   app.post('/logout', checkAuth, (req, res) => {
     req.logout();
+    if (!req.isAuthenticated()) {
+      onLogout();
+    }
     res.sendStatus(200);
   });
 
