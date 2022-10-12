@@ -2,10 +2,11 @@ import { TypeC, TypeOf, array as IOArray } from 'io-ts';
 import { failure } from 'io-ts/lib/PathReporter';
 import { tryCatch, chainEitherK, TaskEither } from 'fp-ts/lib/TaskEither';
 import { flow } from 'fp-ts/lib/function';
-import { either } from 'fp-ts';
+import { array, either } from 'fp-ts';
 
 import { serverError, ServerError } from 'utils';
 import { db } from './init';
+import { pipe } from 'fp-ts/lib/pipeable';
 
 const makeDBQuery = (query: string, params: any[], once = false) => {
   const exec = once ? db.get.bind(db) : db.all.bind(db);
@@ -28,21 +29,32 @@ const makeDBQuery = (query: string, params: any[], once = false) => {
   );
 };
 
-const makeWhereString = (where: { [key: string]: unknown }) => {
-  if (Object.keys(where).length === 1) {
-    const [key] = Object.entries(where)[0];
-    return `${key}=?`;
-  }
+type WhereObject = Partial<WithArray<unknown>>;
 
-  return Object.entries(where)
-    .map(([key, value], index) =>
-      Array.isArray(value)
-        ? index === 0
-          ? `${key} IN(${value.join(',')})`
-          : `AND ${key} IN(${value.join(',')})`
-        : `${key}=?`,
-    )
-    .join(',');
+const makeWhere = (where: WhereObject) => {
+  const queryToValue: { query: string; value: unknown[] }[] = Object.entries(
+    where,
+  ).map(([key, value]) => {
+    if (Array.isArray(value)) {
+      return value.length === 1
+        ? { query: `${key}=?`, value }
+        : { query: `${key} IN(${value.map(() => '?').join(',')})`, value };
+    } else {
+      return { query: `${key}=?`, value: [value] };
+    }
+  });
+
+  const query = pipe(
+    queryToValue,
+    array.map(({ query }) => query),
+  ).join(' AND ');
+
+  const values = pipe(
+    queryToValue,
+    array.chain(({ value }) => value),
+  );
+
+  return { query, values };
 };
 
 type WithArray<T> = {
@@ -58,12 +70,13 @@ export const makeWithScheme = <T extends TypeC<any>>(
     what?: keyof TypeOf<T>[],
   ): TaskEither<ServerError, O extends true ? TypeOf<T> : TypeOf<T>[]> => {
     const whatQuery = what ? (what as any).join(',') : '*';
-    const whereQuery = makeWhereString(where);
+    const whereQuery = makeWhere(where);
     const sql =
       Object.keys(where).length === 0
         ? `SELECT ${whatQuery} from ${table}`
-        : `SELECT ${whatQuery} from ${table} WHERE ${whereQuery}`;
-    const data = makeDBQuery(sql, Object.values(where), once);
+        : `SELECT ${whatQuery} from ${table} WHERE ${whereQuery.query}`;
+
+    const data = makeDBQuery(sql, whereQuery.values, once);
 
     const decode = once ? scheme.decode : IOArray(scheme).decode;
     const withError = flow(
@@ -87,20 +100,17 @@ export const makeWithScheme = <T extends TypeC<any>>(
       return makeDBQuery(sql, orderedValues);
     },
     update: (where: Partial<TypeOf<T>>, updates: Partial<TypeOf<T>>) => {
-      const whereQuery = makeWhereString(where);
-      const setQuery = makeWhereString(updates);
-      const sql = `UPDATE ${table} SET ${setQuery} WHERE ${whereQuery}`;
+      const whereQuery = makeWhere(where);
+      const setQuery = makeWhere(updates);
+      const sql = `UPDATE ${table} SET ${setQuery.query} WHERE ${whereQuery.query}`;
 
-      return makeDBQuery(sql, [
-        ...Object.values(updates),
-        ...Object.values(where),
-      ]);
+      return makeDBQuery(sql, [...Object.values(updates), whereQuery.values]);
     },
     remove: (where: Partial<TypeOf<T>>) => {
-      const whereQuery = makeWhereString(where);
-      const sql = `DELETE FROM ${table} WHERE ${whereQuery}`;
+      const whereQuery = makeWhere(where);
+      const sql = `DELETE FROM ${table} WHERE ${whereQuery.query}`;
 
-      return makeDBQuery(sql, Object.values(where));
+      return makeDBQuery(sql, whereQuery.values);
     },
   };
 };
